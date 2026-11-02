@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Token Cost Guard — private LLM spend reports</title>
+  <meta name="description" content="A private, local-first dashboard for turning LLM usage exports into clear cost and budget reports.">
+  <style>
+    :root{--ink:#17202a;--muted:#617083;--line:#dfe6ee;--soft:#f4f7fa;--brand:#2563eb;--brand2:#0f766e;--danger:#b42318;--card:#fff;--shadow:0 12px 34px rgba(15,31,55,.08)}
+    *{box-sizing:border-box}body{margin:0;background:#f7f9fc;color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 52px}.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:26px}.brand{display:flex;gap:12px;align-items:center}.logo{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#2563eb,#14b8a6);color:#fff;font-weight:800;box-shadow:0 8px 18px rgba(37,99,235,.24)}h1{font-size:24px;line-height:1.1;margin:0}h2{font-size:18px;margin:0 0 14px}h3{font-size:15px;margin:0 0 8px}.sub{color:var(--muted);margin:4px 0 0}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:20px}.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.btn{appearance:none;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:#fff;color:var(--ink);font-weight:650;cursor:pointer}.btn:hover{border-color:#9eb4d0;background:#f9fbff}.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}.btn.secondary{background:#ecfdf8;color:#0f766e;border-color:#b6eee1}.drop{border:1.5px dashed #a9bad0;border-radius:14px;padding:25px;text-align:center;background:linear-gradient(180deg,#fbfdff,#f5f8fc);margin:15px 0}.drop.drag{border-color:var(--brand);background:#eef5ff}.drop strong{display:block;font-size:16px;margin-bottom:4px}.drop span{color:var(--muted);font-size:13px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.metric{padding:15px;border:1px solid var(--line);border-radius:14px;background:#fff}.metric .label{font-size:12px;color:var(--muted)}.metric .value{font-size:23px;font-weight:750;margin-top:4px}.metric .hint{font-size:12px;color:var(--muted);margin-top:3px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:13px}table{width:100%;border-collapse:collapse;min-width:660px}th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}th{font-size:12px;color:var(--muted);font-weight:700;background:#f8fafc}td{font-size:13px}tr:last-child td{border-bottom:0}.right-stack{display:flex;flex-direction:column;gap:18px}.field{display:grid;grid-template-columns:1fr 120px;gap:9px;align-items:center;margin:10px 0}.field label{font-size:13px}.field input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font:inherit}.note{font-size:12px;color:var(--muted);background:#f8fafc;border-radius:10px;padding:10px 11px}.empty{padding:30px 12px;text-align:center;color:var(--muted)}.bar{height:9px;border-radius:999px;background:#e8eef5;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#2563eb,#14b8a6);border-radius:999px}.model-row{display:grid;grid-template-columns:130px 1fr 78px;align-items:center;gap:10px;margin:13px 0;font-size:13px}.model-row b{font-size:12px;text-align:right}.footer{color:var(--muted);font-size:12px;margin-top:24px;text-align:center}.warn{color:var(--danger);font-size:12px;margin-top:8px}.hidden{display:none}@media(max-width:850px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.top{align-items:flex-start;flex-direction:column}}@media(max-width:440px){.metrics{grid-template-columns:1fr}.field{grid-template-columns:1fr 100px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <div class="brand"><div class="logo">TC</div><div><h1>Token Cost Guard</h1><p class="sub">Private LLM spend reports, made local.</p></div></div>
+      <div class="toolbar"><button class="btn" id="sampleBtn">Load sample</button><button class="btn secondary" id="exportBtn" disabled>Export report</button></div>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Import usage</h2>
+        <p class="sub">Drop a CSV or JSON export. Your data stays in this browser tab.</p>
+        <div class="drop" id="drop"><strong>Drop usage file here</strong><span>or choose a file from your computer</span><div style="margin-top:13px"><label class="btn primary">Choose file<input class="hidden" id="file" type="file" accept=".csv,.json,text/csv,application/json"></label></div></div>
+        <div id="status" class="note">Expected columns: <code>model</code>, <code>input_tokens</code>, <code>output_tokens</code>. Optional: <code>request_id</code>, <code>timestamp</code>.</div>
+        <div id="metrics" class="metrics hidden"></div>
+        <div id="tableCard" class="hidden"><h2>Requests</h2><div class="table-wrap"><table><thead><tr><th>Model</th><th>Input tokens</th><th>Output tokens</th><th>Total tokens</th><th>Estimated cost</th></tr></thead><tbody id="rows"></tbody></table></div></div>
+      </div>
+      <aside class="right-stack">
+        <div class="card"><h2>Pricing presets</h2><p class="sub">Edit values to match your provider invoice. Prices are per 1M tokens.</p><div id="pricing"></div><button class="btn" id="addModel">Add model</button><p class="note" style="margin-top:12px">This tool estimates spend from your inputs. Verify prices, cached-token rules, and taxes with your provider.</p></div>
+        <div class="card"><h2>Spend by model</h2><div id="breakdown" class="empty">Import usage to see the breakdown.</div></div>
+        <div class="card"><h2>Privacy</h2><p class="sub">No network requests, accounts, cookies, or analytics. Files are parsed in memory and disappear when you close the tab.</p></div>
+      </aside>
+    </section>
+    <p class="footer">Token Cost Guard · local-first utility · v1.0</p>
+  </main>
+  <script>
+    const defaultPricing = {
+      "gpt-4o": {input: 2.50, output: 10.00},
+      "claude-3-5-sonnet": {input: 3.00, output: 15.00},
+      "gemini-1.5-pro": {input: 1.25, output: 5.00}
+    };
+    let pricing = JSON.parse(localStorage.getItem('tcg-pricing') || 'null') || defaultPricing;
+    let usage = [];
+    let lastReport = null;
+    const $ = s => document.querySelector(s);
+    const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const num = x => { const n = Number(String(x ?? '').replace(/[, ]/g,'')); return Number.isFinite(n) ? n : 0; };
+    const money = x => '$' + Number(x || 0).toFixed(4);
+    function renderPricing(){
+      const box = $('#pricing'); box.innerHTML = '';
+      Object.entries(pricing).forEach(([model, p]) => {
+        const row = document.createElement('div'); row.className='field';
+        row.innerHTML = `<label>${esc(model)}</label><input data-model="${esc(model)}" data-kind="input" type="number" min="0" step="0.01" value="${p.input}"><input data-model="${esc(model)}" data-kind="output" type="number" min="0" step="0.01" value="${p.output}" style="grid-column:2">`;
+        const label = row.querySelector('label'); label.innerHTML += '<br><small style="color:#617083">input / output per 1M</small>';
+        box.appendChild(row);
+      });
+      box.querySelectorAll('input').forEach(i => i.addEventListener('change', () => { pricing[i.dataset.model][i.dataset.kind] = num(i.value); localStorage.setItem('tcg-pricing', JSON.stringify(pricing)); render(); }));
+    }
+    function parseCSV(text){
+      const lines = text.trim().split(/\r?\n/); if (!lines.length || !lines[0]) return [];
+      const cells = line => { const out=[]; let cur='', quote=false; for(let i=0;i<line.length;i++){const c=line[i]; if(c==='"' && line[i+1]==='"'){cur+='"';i++;} else if(c==='"'){quote=!quote;} else if(c===',' && !quote){out.push(cur.trim());cur='';} else cur+=c;} out.push(cur.trim()); return out; };
+      const headers = cells(lines.shift()).map(x=>x.replace(/^\uFEFF/,'').toLowerCase().replace(/\s+/g,'_'));
+      return lines.filter(Boolean).map(line => { const vals=cells(line), row={}; headers.forEach((h,i)=>row[h]=vals[i] ?? ''); return row; });
+    }
+    function normalise(input){
+      let list = Array.isArray(input) ? input : (input?.data || input?.usage || input?.requests || [input]);
+      if (!Array.isArray(list)) list=[list];
+      const out=[];
+      const walk = item => { if(!item || typeof item!=='object') return; if(item.model || item.model_name || item.input_tokens != null || item.prompt_tokens != null){
+          const model=String(item.model || item.model_name || 'unknown'); const inputTokens=num(item.input_tokens ?? item.prompt_tokens ?? item.promptTokenCount); const outputTokens=num(item.output_tokens ?? item.completion_tokens ?? item.candidatesTokenCount); out.push({model,inputTokens,outputTokens}); return;
+        } Object.values(item).forEach(v=>Array.isArray(v)?v.forEach(walk):walk(v)); };
+      list.forEach(walk); return out;
+    }
+    function render(){
+      renderPricing();
+      if(!usage.length){ $('#metrics').classList.add('hidden'); $('#tableCard').classList.add('hidden'); $('#exportBtn').disabled=true; $('#breakdown').className='empty'; $('#breakdown').textContent='Import usage to see the breakdown.'; return; }
+      const rows=usage.map(r=>({...r,total:r.inputTokens+r.outputTokens, cost:(r.inputTokens/1e6*(pricing[r.model]?.input||0))+(r.outputTokens/1e6*(pricing[r.model]?.output||0))}));
+      const totalInput=rows.reduce((a,r)=>a+r.inputTokens,0), totalOutput=rows.reduce((a,r)=>a+r.outputTokens,0), totalCost=rows.reduce((a,r)=>a+r.cost,0);
+      $('#metrics').classList.remove('hidden'); $('#metrics').innerHTML=[['Estimated cost',money(totalCost),'based on editable prices'],['Input tokens',totalInput.toLocaleString(),'prompt tokens'],['Output tokens',totalOutput.toLocaleString(),'completion tokens'],['Requests',rows.length.toLocaleString(),'rows parsed']].map(x=>`<div class="metric"><div class="label">${x[0]}</div><div class="value">${x[1]}</div><div class="hint">${x[2]}</div></div>`).join('');
+      $('#rows').innerHTML=rows.map(r=>`<tr><td>${esc(r.model)}</td><td>${r.inputTokens.toLocaleString()}</td><td>${r.outputTokens.toLocaleString()}</td><td>${r.total.toLocaleString()}</td><td>${money(r.cost)}</td></tr>`).join(''); $('#tableCard').classList.remove('hidden'); $('#exportBtn').disabled=false;
+      const by={}; rows.forEach(r=>{by[r.model]=(by[r.model]||0)+r.cost}); const max=Math.max(...Object.values(by),0.000001); $('#breakdown').className=''; $('#breakdown').innerHTML=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([m,c])=>`<div class="model-row"><span>${esc(m)}</span><div class="bar"><i style="width:${Math.max(2,c/max*100)}%"></i></div><b>${money(c)}</b></div>`).join('');
+      lastReport={generated_at:new Date().toISOString(),total_cost_usd:totalCost,total_input_tokens:totalInput,total_output_tokens:totalOutput,requests:rows};
+    }
+    async function loadFile(file){ try{ const text=await file.text(); const parsed=file.name.toLowerCase().endsWith('.json')?JSON.parse(text):parseCSV(text); usage=normalise(parsed); $('#status').textContent=usage.length?`Loaded ${usage.length} request${usage.length===1?'':'s'} from ${file.name}.`:'No recognisable usage rows found.'; render(); } catch(e){ $('#status').innerHTML='<span class="warn">Could not read this file. Use valid CSV or JSON.</span>'; usage=[]; render(); } }
+    $('#file').addEventListener('change',e=>e.target.files[0]&&loadFile(e.target.files[0]));
+    const drop=$('#drop'); ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')})); ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')})); drop.addEventListener('drop',e=>e.dataTransfer.files[0]&&loadFile(e.dataTransfer.files[0]));
+    $('#sampleBtn').addEventListener('click',()=>{usage=normalise([{model:'gpt-4o',input_tokens:182000,output_tokens:42000},{model:'claude-3-5-sonnet',input_tokens:74000,output_tokens:19000},{model:'gpt-4o',input_tokens:88000,output_tokens:12000}]);$('#status').textContent='Loaded built-in sample data.';render();});
+    $('#addModel').addEventListener('click',()=>{const name=prompt('Model name'); if(name && !pricing[name]){pricing[name]={input:0,output:0};localStorage.setItem('tcg-pricing',JSON.stringify(pricing));render();}});
+    $('#exportBtn').addEventListener('click',()=>{if(!lastReport)return; const blob=new Blob([JSON.stringify(lastReport,null,2)],{type:'application/json'}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='token-cost-report.json';a.click();URL.revokeObjectURL(a.href);});
+    render();
+  </script>
+</body>
+</html>

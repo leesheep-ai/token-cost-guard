@@ -1,0 +1,117 @@
+{
+  "stage": "before",
+  "testedAt": "2026-11-02T13:14:09.752Z",
+  "browser": "156.0.8078.4",
+  "node": "v24.14.0",
+  "platform": "win32",
+  "scope": "Owned local Token Cost Guard; synthetic data only; not a client engagement",
+  "passed": 2,
+  "total": 15,
+  "results": [
+    {
+      "id": "TC01",
+      "name": "Known-price sample exports the independently calculated $1.722",
+      "passed": true
+    },
+    {
+      "id": "TC02",
+      "name": "Unknown model cost remains unknown in screen and export",
+      "passed": false,
+      "error": "An unpriced request must not be reported as free\n\n0 !== null\n",
+      "pageErrors": []
+    },
+    {
+      "id": "TC03",
+      "name": "Negative token counts are rejected with an explanation",
+      "passed": false,
+      "error": "Invalid counts must not create a report\n\ntrue !== false\n",
+      "pageErrors": []
+    },
+    {
+      "id": "TC04",
+      "name": "Non-numeric token counts are rejected",
+      "passed": false,
+      "error": "Invalid text must not be coerced to zero\n\ntrue !== false\n",
+      "pageErrors": []
+    },
+    {
+      "id": "TC05",
+      "name": "Malformed stored pricing does not break startup",
+      "passed": false,
+      "error": "Page should recover from damaged settings\n\nfalse !== true\n",
+      "pageErrors": [
+        "Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+      ]
+    },
+    {
+      "id": "TC06",
+      "name": "CSV quoted newlines preserve request boundaries",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\n2 !== 1\n",
+      "pageErrors": []
+    },
+    {
+      "id": "TC07",
+      "name": "Nested JSON usage preserves parent model",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'unknown'\n- 'gpt-4o'\n",
+      "pageErrors": []
+    },
+    {
+      "id": "TC08",
+      "name": "320px viewport has no page-wide horizontal overflow",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\nfalse !== true\n",
+      "pageErrors": []
+    },
+    {
+      "id": "TC09",
+      "name": "Landing page has no placeholder checkout link",
+      "passed": false,
+      "error": "Checkout placeholder is visible to visitors\n\n1 !== 0\n",
+      "pageErrors": []
+    },
+    {
+      "id": "TC10",
+      "name": "Usage content produces no external network requests",
+      "passed": true
+    },
+    {
+      "id": "TC11",
+      "name": "Model names cannot inject markup or poison aggregation",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\n0 !== null\n",
+      "pageErrors": []
+    },
+    {
+      "id": "TC12",
+      "name": "Adding a model requires explicit prices before costing",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\n0 !== null\n",
+      "pageErrors": []
+    },
+    {
+      "id": "TC13",
+      "name": "Clearing a price makes a previously costed report incomplete",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\n1.047 !== null\n",
+      "pageErrors": []
+    },
+    {
+      "id": "TC14",
+      "name": "Unterminated CSV quote is rejected",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n",
+      "pageErrors": []
+    },
+    {
+      "id": "TC15",
+      "name": "Disabled storage still permits import and price editing",
+      "passed": false,
+      "error": "Pricing editor unavailable after blocked storage",
+      "pageErrors": [
+        "Blocked"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "stage": "after",
+  "testedAt": "2026-11-02T13:14:27.593Z",
+  "browser": "156.0.8078.4",
+  "node": "v24.14.0",
+  "platform": "win32",
+  "scope": "Owned local Token Cost Guard; synthetic data only; not a client engagement",
+  "passed": 15,
+  "total": 15,
+  "results": [
+    {
+      "id": "TC01",
+      "name": "Known-price sample exports the independently calculated $1.722",
+      "passed": true
+    },
+    {
+      "id": "TC02",
+      "name": "Unknown model cost remains unknown in screen and export",
+      "passed": true
+    },
+    {
+      "id": "TC03",
+      "name": "Negative token counts are rejected with an explanation",
+      "passed": true
+    },
+    {
+      "id": "TC04",
+      "name": "Non-numeric token counts are rejected",
+      "passed": true
+    },
+    {
+      "id": "TC05",
+      "name": "Malformed stored pricing does not break startup",
+      "passed": true
+    },
+    {
+      "id": "TC06",
+      "name": "CSV quoted newlines preserve request boundaries",
+      "passed": true
+    },
+    {
+      "id": "TC07",
+      "name": "Nested JSON usage preserves parent model",
+      "passed": true
+    },
+    {
+      "id": "TC08",
+      "name": "320px viewport has no page-wide horizontal overflow",
+      "passed": true
+    },
+    {
+      "id": "TC09",
+      "name": "Landing page has no placeholder checkout link",
+      "passed": true
+    },
+    {
+      "id": "TC10",
+      "name": "Usage content produces no external network requests",
+      "passed": true
+    },
+    {
+      "id": "TC11",
+      "name": "Model names cannot inject markup or poison aggregation",
+      "passed": true
+    },
+    {
+      "id": "TC12",
+      "name": "Adding a model requires explicit prices before costing",
+      "passed": true
+    },
+    {
+      "id": "TC13",
+      "name": "Clearing a price makes a previously costed report incomplete",
+      "passed": true
+    },
+    {
+      "id": "TC14",
+      "name": "Unterminated CSV quote is rejected",
+      "passed": true
+    },
+    {
+      "id": "TC15",
+      "name": "Disabled storage still permits import and price editing",
+      "passed": true
+    }
+  ]
+}
